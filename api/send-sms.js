@@ -112,7 +112,7 @@ module.exports = async (req, res) => {
 
         console.log("BulkSMS response:", JSON.stringify(smsRes));
 
-        if (smsRes.success === true) {
+        if (smsRes.success === true || smsRes.status === "success" || (smsRes.data && smsRes.data.status === "success")) {
             await firebasePatch(`users/${uid}`, {
                 smsCredits: currentCredits - 1
             });
