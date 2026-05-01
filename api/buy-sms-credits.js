@@ -49,14 +49,14 @@ function firebasePatch(path, body) {
     });
 }
 
-function paystackVerify(reference) {
+function flutterwaveVerify(transactionId) {
     return new Promise((resolve, reject) => {
         const options = {
-            hostname: "api.paystack.co",
-            path: `/transaction/verify/${reference}`,
+            hostname: "api.flutterwave.com",
+            path: `/v3/transactions/${transactionId}/verify`,
             method: "GET",
             headers: {
-                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
+                Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
             }
         };
         const request = https.request(options, (response) => {
@@ -80,24 +80,28 @@ module.exports = async (req, res) => {
     if (req.method === "OPTIONS") return res.status(200).end();
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    const { reference, uid, credits } = req.body;
+    const { transaction_id, uid, credits } = req.body;
 
-    if (!reference || !uid || !credits) {
+    if (!transaction_id || !uid || !credits) {
         return res.status(400).json({ error: "Missing fields" });
     }
 
     try {
-        const paystackRes = await paystackVerify(reference);
+        const flwRes = await flutterwaveVerify(transaction_id);
 
-        if (paystackRes.data.status !== "success") {
+        if (
+            flwRes.status !== "success" ||
+            flwRes.data.status !== "successful" ||
+            flwRes.data.currency !== "NGN"
+        ) {
             return res.status(400).json({ error: "Payment not successful" });
         }
 
-        const amount = paystackRes.data.amount;
+        const amount = flwRes.data.amount;
         const validPackages = {
-            10: 20000,
-            30: 50000,
-            50: 100000
+            10: 200,
+            30: 500,
+            50: 1000
         };
 
         if (!validPackages[credits] || amount < validPackages[credits]) {
