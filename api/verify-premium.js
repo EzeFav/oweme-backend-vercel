@@ -29,14 +29,14 @@ function firebasePatch(path, body) {
     });
 }
 
-function paystackVerify(reference) {
+function flutterwaveVerify(transactionId) {
     return new Promise((resolve, reject) => {
         const options = {
-            hostname: "api.paystack.co",
-            path: `/transaction/verify/${reference}`,
+            hostname: "api.flutterwave.com",
+            path: `/v3/transactions/${transactionId}/verify`,
             method: "GET",
             headers: {
-                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
+                Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
             }
         };
         const request = https.request(options, (response) => {
@@ -60,18 +60,20 @@ module.exports = async (req, res) => {
     if (req.method === "OPTIONS") return res.status(200).end();
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    const { reference, uid } = req.body;
+    const { transaction_id, uid } = req.body;
 
-    if (!reference || !uid) {
-        return res.status(400).json({ error: "Missing reference or uid" });
+    if (!transaction_id || !uid) {
+        return res.status(400).json({ error: "Missing transaction_id or uid" });
     }
 
     try {
-        const paystackRes = await paystackVerify(reference);
+        const flwRes = await flutterwaveVerify(transaction_id);
 
         if (
-            paystackRes.data.status === "success" &&
-            paystackRes.data.amount >= 150000
+            flwRes.status === "success" &&
+            flwRes.data.status === "successful" &&
+            flwRes.data.amount >= 1500 &&
+            flwRes.data.currency === "NGN"
         ) {
             await firebasePatch(`users/${uid}`, {
                 isPremium: true,
