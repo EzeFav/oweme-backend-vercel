@@ -83,12 +83,7 @@ module.exports = async (req, res) => {
         } else {
             return res.status(400).json({
                 error: "Payment verification failed",
-                debug: {
-                    flw_status: flwRes.status,
-                    data_status: flwRes.data ? flwRes.data.status : "no data",
-                    amount: flwRes.data ? flwRes.data.amount : "no amount",
-                    currency: flwRes.data ? flwRes.data.currency : "no currency"
-                }
+               
             });
         }
     } catch (error) {
