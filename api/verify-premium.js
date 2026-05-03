@@ -71,7 +71,9 @@ module.exports = async (req, res) => {
 
         if (
             flwRes.status === "success" &&
-            flwRes.data.status === "successful"
+            flwRes.data.status === "successful" &&
+            flwRes.data.amount >= 1500 &&
+            flwRes.data.currency === "NGN"
         ) {
             await firebasePatch(`users/${uid}`, {
                 isPremium: true,
