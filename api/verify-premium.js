@@ -70,11 +70,11 @@ module.exports = async (req, res) => {
         const flwRes = await flutterwaveVerify(transaction_id);
 
         if (
-            flwRes.status === "success" &&
-            flwRes.data.status === "successful" &&
-            flwRes.data.amount >= 1500 &&
-            flwRes.data.currency === "NGN"
-        ) {
+    flwRes.status === "success" &&
+    flwRes.data.status === "successful" &&
+    flwRes.data.amount >= 1500 &&
+    flwRes.data.currency === "NGN"
+) {
             await firebasePatch(`users/${uid}`, {
                 isPremium: true,
                 premiumSince: Date.now()
