@@ -70,18 +70,24 @@ module.exports = async (req, res) => {
         const flwRes = await flutterwaveVerify(transaction_id);
 
         if (
-    flwRes.status === "success" &&
-    flwRes.data.status === "successful" &&
-    flwRes.data.amount >= 1000 &&
-    flwRes.data.currency === "NGN"
-) {
+            flwRes.status === "success" &&
+            flwRes.data.status === "successful"
+        ) {
             await firebasePatch(`users/${uid}`, {
                 isPremium: true,
                 premiumSince: Date.now()
             });
             return res.json({ success: true, message: "Premium unlocked!" });
         } else {
-            return res.status(400).json({ error: "Payment verification failed" });
+            return res.status(400).json({
+                error: "Payment verification failed",
+                debug: {
+                    flw_status: flwRes.status,
+                    data_status: flwRes.data ? flwRes.data.status : "no data",
+                    amount: flwRes.data ? flwRes.data.amount : "no amount",
+                    currency: flwRes.data ? flwRes.data.currency : "no currency"
+                }
+            });
         }
     } catch (error) {
         return res.status(500).json({ error: "Server error: " + error.message });
